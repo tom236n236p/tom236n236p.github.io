@@ -73,7 +73,7 @@ function insertDiv(video) {
         .addClass("wrap_" + video.id)
         .append(
             $("<div class='head'>")
-                .append($("<div class='title'>").text(video.id))
+                .append($("<div class='title'>").text($("#name").val()))
                 .append($("<div class='close'>").text("☓")
                     .on("click", function(){
                         $(".wrap_" + video.id).remove();
@@ -183,6 +183,7 @@ $(function () {
 <div id="streams"></div>
 
 <input type="text" id="key" name="key" placeholder="ここにKEYを入力">
+<input type="text" id="name" name="name" placeholder="ここに名前を入力">
 <input type="button" id="btn_ok" value="OK">
 
 <div id="history">
