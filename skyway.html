@@ -67,13 +67,14 @@
 const HISTORY_KEY = "swKey";
 
 function insertDiv(video) {
+	var name = $("#name").val();
     var node = MultiParty.util.createVideoNode(video);
     $(".wrap_" + video.id).remove();
     $("<div class='wrap'>")
         .addClass("wrap_" + video.id)
         .append(
             $("<div class='head'>")
-                .append($("<div class='title'>").text($("#name").val()))
+                .append($("<div class='title'>").text(name))
                 .append($("<div class='close'>").text("☓")
                     .on("click", function(){
                         $(".wrap_" + video.id).remove();
@@ -87,6 +88,7 @@ function insertDiv(video) {
 
     // 初期状態ではミュートに
     $("#" + video.id).get(0).muted = true;
+    $("#name").remove();
 }
 
 function start(key) {
