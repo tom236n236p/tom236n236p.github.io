@@ -98,8 +98,9 @@ function start(key,doShare) {
 
     multiparty.on("my_ms", function(video) {
         if(!doShare) {
-	        insertDiv(video);
         	multiparty.mute({"video": true, "audio": true});
+        } else {
+        	insertDiv(video);
         }
         saveHistory(key);
     }).on("peer_ms", function(video) {
