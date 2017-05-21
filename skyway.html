@@ -88,17 +88,18 @@ function insertDiv(video) {
 
     // 初期状態ではミュートに
     $("#" + video.id).get(0).muted = true;
-    $("#name").remove();
 }
 
-function start(key) {
+function start(key,doShare) {
     // MultiParty インスタンスを生成
     var multiparty = new MultiParty( {
         "key": key    /* SkyWay keyを指定 */
     });
 
     multiparty.on("my_ms", function(video) {
-        insertDiv(video);
+    	if(doShare) {
+        	insertDiv(video);
+        }
         saveHistory(key);
     }).on("peer_ms", function(video) {
         console.log("peer_ms", video);
@@ -121,7 +122,9 @@ function start(key) {
     });
 
     // サーバとpeerに接続
-    multiparty.start()
+    multiparty.start();
+    
+    $("#inputArea").remove();
 }
 
 function saveHistory(val) {
@@ -175,7 +178,7 @@ function showHistory() {
 
 $(function () {
     $("#btn_ok").on("click", function(){
-        start($("#key").val());
+        start($("#key").val(),$("#doShare").prop("checked"));
         $("#key, #btn_ok, #history").remove();
     });
     showHistory();
@@ -184,8 +187,12 @@ $(function () {
 
 <div id="streams"></div>
 
-<input type="text" id="key" name="key" placeholder="ここにKEYを入力">
-<input type="button" id="btn_ok" value="OK">
+<div id="inputArea">
+	<input type="text" id="key" name="key" placeholder="ここにKEYを入力">
+	<input type="text" id="name" name="name" placeholder="ここに名前を入力">
+	<input type="checkbox" id="doShare" name="doShare" checked="checked">自分の画面を写す
+	<input type="button" id="btn_ok" value="OK">
+</div>
 
 <div id="history">
     <ul class="history"></ul>
