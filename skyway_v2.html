@@ -89,16 +89,18 @@ function insertDiv(video) {
     // 初期状態ではミュートに
     $("#" + video.id).get(0).muted = true;
     $("#name").remove();
+    $("#doShare").remove();
 }
 
 function start(key,doShare) {
+	alert(doShare);
     // MultiParty インスタンスを生成
     var multiparty = new MultiParty( {
         "key": key    /* SkyWay keyを指定 */
     });
 
     multiparty.on("my_ms", function(video) {
-    	if(doShare == "1") {
+    	if(doShare) {
         	insertDiv(video);
         }
         saveHistory(key);
@@ -177,7 +179,7 @@ function showHistory() {
 
 $(function () {
     $("#btn_ok").on("click", function(){
-        start($("#key").val(),$("#doShare").val());
+        start($("#key").val(),$("#doShare").prop("checked"));
         $("#key, #btn_ok, #history").remove();
     });
     showHistory();
@@ -188,7 +190,7 @@ $(function () {
 
 <input type="text" id="key" name="key" placeholder="ここにKEYを入力">
 <input type="text" id="name" name="name" placeholder="ここに名前を入力">
-<input type="checkbox" id="doShare" value="1" checked="checked">自分の画面を写す
+<input type="checkbox" id="doShare" name="doShare" checked="checked">自分の画面を写す
 <input type="button" id="btn_ok" value="OK">
 
 <div id="history">
