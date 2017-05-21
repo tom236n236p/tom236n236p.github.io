@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://skyway.io/dist/0.3/peer.min.js"></script>
+    <script src="https://skyway.io/dist/multiparty.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" id="jquery-ui-css" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css" type="text/css" media="all" />
+
+<style>
+    #streams {
+        position: relative;
+        width: 100%;
+    }
+    #streams div.wrap{
+        position: absolute !important;
+        min-width: 50px;
+        min-height: 50px;
+    }
+    #streams div.ui-resizable{
+        border: 1px solid #DDDDDD;
+        width: 50%;
+    }
+    #streams div.head{
+        width: 100%;
+        height: 25px;
+        background-color: #444;
+        color: #DDD;
+    }
+    video {
+        width: 100%;
+        height: calc(100% - 25px);
+    }
+
+    #key {
+        width: 250px;
+    }
+
+    #history {
+        display: none;
+    }
+    .title {
+        margin: 3px 0 0 3px;
+        float: left;
+        width: calc(100% - 30px - 6px);
+        overflow: hidden;
+    }
+    .close {
+        margin: 3px;
+        float: right;
+        cursor: pointer;
+        font-weight: 900;
+        width: 24px;
+    }
+    .link {
+        cursor: pointer;
+        color: blue;
+        text-decoration: underline;
+    }
+</style>
+
+</head>
+<body>
+
+<script>
+const HISTORY_KEY = "swKey";
+
+function insertDiv(video) {
+	var name = $("#name").val();
+    var node = MultiParty.util.createVideoNode(video);
+    $(".wrap_" + video.id).remove();
+    $("<div class='wrap'>")
+        .addClass("wrap_" + video.id)
+        .append(
+            $("<div class='head'>")
+                .append($("<div class='title'>").text(name))
+                .append($("<div class='close'>").text("☓")
+                    .on("click", function(){
+                        $(".wrap_" + video.id).remove();
+                    })
+                )
+        )
+        .append($(node))
+        .resizable()
+        .draggable({stack: ".wrap"})
+        .appendTo("#streams");
+
+    // 初期状態ではミュートに
+    $("#" + video.id).get(0).muted = true;
+    $("#name").remove();
+}
+
+function start(key,doShare) {
+    // MultiParty インスタンスを生成
+    var multiparty = new MultiParty( {
+        "key": key    /* SkyWay keyを指定 */
+    });
+
+    multiparty.on("my_ms", function(video) {
+    	if(doShare == "1") {
+        	insertDiv(video);
+        }
+        saveHistory(key);
+    }).on("peer_ms", function(video) {
+        console.log("peer_ms", video);
+        insertDiv(video);
+    }).on("ms_close", function(peer_id) {
+        console.log("ms_close", peer_id);
+        $("#" + peer_id).parent().remove();
+    }).on("open", function(id) {
+        console.log("open", id);
+    }).on("error", function(err) {
+        console.log("error", err);
+    }).on("ss_close", function(peer_id) {
+        console.log("ss_close", peer_id);
+    }).on("dc_open", function(peer) {
+        console.log("dc_open", peer);
+    }).on("message", function(messages) {
+        console.log("message", messages);
+    }).on("dc_close", function(peer_id) {
+        console.log("dc_close", peer_id);
+    });
+
+    // サーバとpeerに接続
+    multiparty.start()
+}
+
+function saveHistory(val) {
+    var listStr = localStorage.getItem(HISTORY_KEY);
+    listStr = listStr || "[]";
+    try {
+        var listJson = JSON.parse(listStr);
+        if (listJson.indexOf(val) == -1) {
+            listJson.push(val);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(listJson));
+        }
+    } catch(e){
+        console.error(e);
+    }
+}
+
+function showHistory() {
+    var listStr = localStorage.getItem(HISTORY_KEY);
+    if (!listStr) {
+        return;
+    }
+    try {
+        var listJson = JSON.parse(listStr);
+        if (listJson.length == 0) {
+            return;
+        }
+        for (var i in listJson) {
+            $(".history").append(
+                $("<li>").append(
+                    $("<span>")
+                        .text(listJson[i])
+                        .addClass("link")
+                        .on("click", function() {
+                            $("#key").val($(this).text());
+                        })
+                )
+            );
+        }
+    } catch(e){
+        console.error(e);
+    }
+    
+    $("#deleteHisotry").on("click", function() {
+        if (window.confirm("履歴を削除します。")){
+            localStorage.setItem(HISTORY_KEY, "[]");
+            $("#history").hide();
+        }
+    });
+    $("#history").show();
+}
+
+$(function () {
+    $("#btn_ok").on("click", function(){
+        start($("#key").val(),$("#doShare").val());
+        $("#key, #btn_ok, #history").remove();
+    });
+    showHistory();
+});
+</script>
+
+<div id="streams"></div>
+
+<input type="text" id="key" name="key" placeholder="ここにKEYを入力">
+<input type="text" id="name" name="name" placeholder="ここに名前を入力">
+<input type="checkbox" id="doShare" value="1" checked="checked">自分の画面を写す
+<input type="button" id="btn_ok" value="OK">
+
+<div id="history">
+    <ul class="history"></ul>
+    <p class="link" id="deleteHisotry">履歴を削除</p>
+</div>
+
+</body>
+</html>
